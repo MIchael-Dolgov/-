@@ -53,9 +53,10 @@ namespace ConsoleApp
         {
             bool appIsRunning = true;
             ComplexNum cmpNum = new ComplexNum(0, 0);
-            while(appIsRunning)
+            while (appIsRunning)
             {
                 Console.WriteLine("=====Menu=====");
+                Console.WriteLine("Текущее комплексное число: " + cmpNum.ToString());
                 Console.WriteLine("1) Ввести комплексное число");
                 Console.WriteLine("2)Сложить комплексные числа");
                 Console.WriteLine("3)Вычесть комплексные числа");
@@ -63,37 +64,72 @@ namespace ConsoleApp
                 Console.WriteLine("5)Поделить комплексные числа");
                 Console.WriteLine("6)Найти модуль введённого комплексного числа");
                 Console.WriteLine("7)Найти аргумент введённого комплексного числа");
-                Console.WriteLine("8)Вернуть мнмую часть числа");
+                Console.WriteLine("8)Вернуть мнимую часть числа");
                 Console.WriteLine("9)Вернуть вещественную часть числа");
                 Console.WriteLine("Q/q)Выход");
                 int n;
+
+                string[] textVar;
                 switch (Console.ReadLine())
                 {
                     case "1":
                         Console.Clear();
-                   
+                        Console.Write("Введите число: ");
+                        textVar = Console.ReadLine().Trim().Split();
+                        cmpNum.REAL = int.Parse(textVar[0]);
+                        cmpNum.IMAGINARY = int.Parse(textVar[1]);
                         break;
                     case "2":
+                        Console.Clear();
+                        Console.Write("Введите второе число: ");
+                        textVar = Console.ReadLine().Trim().Split();
+                        {
+                            ComplexNum cmpNum2 = new ComplexNum(int.Parse(textVar[0]), int.Parse(textVar[1]));
+                            cmpNum += cmpNum2;
+                        }
+                        Console.WriteLine("Новое значение комлексного числа: " + cmpNum.ToString());
                         break;
                     case "3":
+                        Console.Clear();
+                        Console.Write("Введите второе число: ");
+                        textVar = Console.ReadLine().Trim().Split();
+                        {
+                            ComplexNum cmpNum2 = new ComplexNum(int.Parse(textVar[0]), int.Parse(textVar[1]));
+                            cmpNum -= cmpNum2;
+                        }
+                        Console.WriteLine("Новое значение комлексного числа: " + cmpNum.ToString());
                         break;
                     case "4":
+                        Console.Clear();
+                        Console.Write("Введите второе число, разделив мнимую и реальную части пробелом: ");
+                        textVar = Console.ReadLine().Trim().Split();
+                        {
+                            ComplexNum cmpNum2 = new ComplexNum(int.Parse(textVar[0]), int.Parse(textVar[1]));
+                            cmpNum *= cmpNum2;
+                        }
+                        Console.WriteLine("Новое значение комлексного числа: " + cmpNum.ToString());
                         break;
                     case "5":
+                        Console.Clear();
+                        Console.Write("Введите второе число, разделив мнимую и реальную части пробелом: ");
+                        textVar = Console.ReadLine().Trim().Split();
+                        {
+                            ComplexNum cmpNum2 = new ComplexNum(int.Parse(textVar[0]), int.Parse(textVar[1]));
+                            cmpNum /= cmpNum2;
+                        }
+                        Console.WriteLine("Новое значение комлексного числа: " + cmpNum.ToString());
                         break;
                     case "6":
+                        Console.Write("Значение модуля текущего комплексного числа: " + ComplexNum.Modulo(cmpNum));
                         break;
                     case "7":
+                        Console.WriteLine("Значение аргумента текущего комплексного числа: " + ComplexNum.ComplexArgument(cmpNum));
                         break;
                     case "8":
+                        Console.WriteLine("Мнимая часть числа: " + cmpNum.IMAGINARY);
                         break;
                     case "9":
-                        break;
-                    case "10":
-                        break;
-                    case "11":
-                        break;
-                    case "12":
+                        Console.WriteLine("Реальная часть числа: " + cmpNum.REAL);
                         break;
                     case "Q":
                     case "q":
