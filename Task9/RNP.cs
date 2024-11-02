@@ -111,11 +111,20 @@ public class RNP
                 }
                 else if (BinaryOperations.ContainsKey(word))
                 {
-                    while (!stack.Empty() && BinaryOperations[word].Item1 <= BinaryOperations[stack.Peek()].Item1)
+                    if (stack.Empty())
+                    {
+                        stack.Push(word);
+                    }
+                    else if (BinaryOperations.ContainsKey(stack.Peek()) && BinaryOperations[word].Item1
+                             <= BinaryOperations[stack.Peek()].Item1)
                     {
                         postfix.Enqueue(stack.Pop());
+                        stack.Push(word);
                     }
-                    stack.Push(word);
+                    else
+                    {
+                        stack.Push(word);
+                    }
                 }
                 word = "";
             }
