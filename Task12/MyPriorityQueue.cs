@@ -166,7 +166,7 @@ namespace Task12
 
         public T? Peek() => !IsEmpty() ? queue[0] : default(T);
 
-        public T? Pull()
+        public T? Poll()
         {   
             if (IsEmpty())
                 return default(T);
