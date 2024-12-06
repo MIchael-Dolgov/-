@@ -1,0 +1,41 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Task17.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        
+        xmlns:scottPlot="clr-namespace:ScottPlot.Avalonia;assembly=ScottPlot.Avalonia"
+        
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Task17.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="Task17">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+    <!-- Code -->
+    <!-- <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/> -->
+    <StackPanel>
+        <TextBlock TextAlignment="Center" Background="MistyRose">Задача 17</TextBlock>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin = "20,0,0,0">
+            <scottPlot:AvaPlot Name="MainPlot"  Width="750" Height="450" Margin="0, 10, 0,0"/>
+        </StackPanel> 
+        <StackPanel HorizontalAlignment="Center">
+            <TextBlock>Выберите операцию для теста:</TextBlock>
+            <ComboBox Name="DataType" SelectedIndex="0" MaxDropDownHeight="200" Width="350"
+                      SelectionChanged="TestType">
+                <ComboBoxItem>get</ComboBoxItem>
+                <ComboBoxItem>set</ComboBoxItem>
+                <ComboBoxItem>add</ComboBoxItem>
+                <ComboBoxItem>add(i,value)</ComboBoxItem>
+                <ComboBoxItem>remove</ComboBoxItem>
+                <!-- <ComboBoxItem>DateTime</ComboBoxItem> -->
+            </ComboBox>
+        </StackPanel> 
+        <Button Click="StartTestButton" Name="StartTestBtn" Margin="0,20,0,0" HorizontalAlignment="Center" Width="350">Начать тест!</Button>
+    </StackPanel>
+</Window>
