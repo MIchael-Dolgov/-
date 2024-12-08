@@ -1,0 +1,8 @@
+Double => multi_line_value(999)
+Int => x(42)
+Float => pi(31415)
+
+Ошибки:
+Некорректный тип: long для переменной very_long_number.
+Некорректный тип: string для переменной message.
+Некорректный тип: bool для переменной flag.

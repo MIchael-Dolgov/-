@@ -1,0 +1,15 @@
+int x = 42;
+float pi = 31415;
+long very_long_number = 123456789;
+string message = 123;
+strg message = HelloAbobus;
+flt 
+= 1;
+fjjfj
+
+double
+multi_line_value
+=
+999;
+
+bool flag = 1;
