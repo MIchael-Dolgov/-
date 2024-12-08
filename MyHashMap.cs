@@ -1,4 +1,4 @@
-namespace Task18
+namespace Task20
 {
 
     public class MyHashMap<TK, TV> where TK : IComparable<TK>
@@ -156,7 +156,7 @@ namespace Task18
 
         public void Put(TK key, TV value)
         {
-            if (_size  > _threshold) Resize();
+            if (_size + 1 > _threshold) Resize();
             Entry? currentEntry = GetEntry(key);
             if (currentEntry != null)
             {
