@@ -1,4 +1,4 @@
-namespace Task20
+namespace Task18
 {
 
     public class MyHashMap<TK, TV> where TK : IComparable<TK>
