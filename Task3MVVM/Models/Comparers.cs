@@ -16,7 +16,6 @@ public static class ComparerFactory
         // Проверяем, есть ли компаратор в кэше
         if (!dict.TryGetValue(key, out var existingValue))
         {
-            // Если нет, создаем новый компаратор и добавляем в кэш
             existingValue = valueFactory();
             dict[key] = existingValue;
         }
