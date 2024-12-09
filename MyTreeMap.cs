@@ -1,8 +1,11 @@
+using System;
+using System.Collections.Generic;
+using Task22.Models;
 
-namespace Task21
+namespace Task22
 {
 
-    public class MyTreeMap<TKey, TValue> 
+    public class MyTreeMap<TKey, TValue> : ITestable<TKey, TValue> where TKey : IComparable<TKey> 
     {
         
         private ITreeMapComparator<TKey> _comparator;
@@ -65,6 +68,25 @@ namespace Task21
                 node.Value = value; 
             }
             return node;
+        }
+        
+        public TValue Get(TKey key)
+        {
+            var node = GetNode(_root, key);
+            return node != null ? node.Value : default(TValue);
+        }
+
+        private Node GetNode(Node node, TKey key)
+        {
+            if (node == null) return null;
+
+            int cmp = _comparator.Compare(key, node.Key);
+            if (cmp < 0)
+                return GetNode(node.L, key);
+            else if (cmp > 0)
+                return GetNode(node.R, key);
+            else
+                return node;
         }
 
         public bool ContainsKey(object key)
