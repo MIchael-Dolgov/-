@@ -17,10 +17,8 @@ namespace Task26
                     string line;
                     while ((line = stream.ReadLine()!) != null)
                     {
-                        // Извлекаем слова из строки
                         var words = ExtractWords(line);
 
-                        // Добавляем слова в множество (MyHashSet)
                         foreach (var word in words)
                         {
                             uniqueWords.Add(word.ToLower()); // Приводим к нижнему регистру
@@ -34,7 +32,6 @@ namespace Task26
                 return;
             }
 
-            // Преобразуем множество в массив и выводим результат
             string[] result = uniqueWords.ToArray();
             Console.WriteLine("Уникальные слова (с точностью до регистра):");
             foreach (var word in result)
@@ -50,7 +47,7 @@ namespace Task26
 
             foreach (char c in line)
             {
-                if (char.IsLetter(c) && c <= 'z' && c >= 'A') // Проверяем, что символ - латинская буква
+                if (char.IsLetter(c) && c <= 'z' && c >= 'A')
                 {
                     currentWord.Append(c);
                 }
@@ -61,7 +58,6 @@ namespace Task26
                 }
             }
 
-            // Добавляем последнее слово, если строка на этом не закончилась
             if (currentWord.Length > 0)
             {
                 words.Add(currentWord.ToString());
