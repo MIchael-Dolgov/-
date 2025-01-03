@@ -1,0 +1,14 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="630" d:DesignHeight="630"
+        x:Class="CrissCross.Views.MainWindow"
+        Title="CrissCross">
+    <!-- 630px/35px = 18 клеток вместится в 1 фрейм -->
+    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+        <Grid x:Name="MatrixGrid">
+            <!-- Динамически добавляем строки и столбцы с кодом -->
+        </Grid>
+    </ScrollViewer>
+</Window>
