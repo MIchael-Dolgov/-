@@ -37,7 +37,7 @@ namespace CrissCross.Models
         public ResizableMatrix matr = new ResizableMatrix(1, 1);
         public double wordsDensityCoeff; // (wordCrossowers/matrixDimension)
 
-        public CrossBoard(string wordsFilepath, double wordsDensityCoeff = 0.01)
+        public CrossBoard(string wordsFilepath, double wordsDensityCoeff = 0.004)
         {
             LoadWords(wordsFilepath);
             this.wordsDensityCoeff = wordsDensityCoeff;
@@ -154,7 +154,7 @@ namespace CrissCross.Models
                 charIndx = 0;
             }
 
-            // косяк в логике
+            // косяк в логике (был, при: endRow >= matr.Rows)
             if (endRow >= oldRow)
             {
                 matr.Resize(0, endRow - oldRow, 0, 0);
@@ -194,6 +194,9 @@ namespace CrissCross.Models
             return isFree;
         }
 
+        // Для более "разреженного в плане расстановки решения, необходимо доп проверка условия матрицы на наличие
+        // пустого элемента или границы матрицы слева/справа для вставки горизонтально и сверху/снизу для вставки
+        // вертикально
         public void InsertWord(string word, bool isHoriz, int absRow, int absColumn)
         {
             // Вставка через абсолютные координаты
@@ -267,6 +270,8 @@ namespace CrissCross.Models
             }
             else
             {
+                // Для увеличения связности, можно переписать так, чтобы сначала итерировались буквы слова для коорднат
+                // а не наоборот
                 for (int k = 0; k < word.Length && !isPlacedSuccessfully; k++)
                 {
                     for (int i = 0; i < matr.Rows && !isPlacedSuccessfully; i++)
@@ -388,7 +393,7 @@ namespace CrissCross.Models
                 return true;
             }
 
-            // Создаём копию списка, чтобы безопасно итерировать
+            // Создаём копию списка, чтобы безопасно итерировать по словам
             var wordsToTry = new List<string>(listOfUnplacedWords);
 
             foreach (var word in wordsToTry)
@@ -410,6 +415,7 @@ namespace CrissCross.Models
 
                     // Если размещение не сработало, откатываем изменения
                     Console.WriteLine($"Backtracking, removing: {word}");
+                    listOfUnplacedWords.Add(word);
                     RelativeWordDelete(word);
                     RemovePlacedWordByName(word);
                     usedWords.Remove(word);
@@ -420,7 +426,6 @@ namespace CrissCross.Models
                 }
             }
 
-            // Если ни одно слово не может быть вставлено, возвращаем false
             return false;
         }
         
