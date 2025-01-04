@@ -45,6 +45,8 @@ namespace CrissCross.Models
 
 
 
+        /*
+        В данной реализации метода слова прилегают плотно друг к другу
         private bool isPerpendicularCrossover(int row, int col, bool isHorizontal)
         {
             if (isHorizontal)
@@ -74,6 +76,60 @@ namespace CrissCross.Models
                 return !(isLeftEmpty && isRightEmpty) && (isAboveEmpty && isBelowEmpty);
             }
         }
+        */
+
+        private bool isPerpendicularCrossover(int row, int col, bool isHorizontal, bool isCrossower, bool isCharAfterCrossower)
+        {
+            if (isHorizontal)
+            {
+                bool isAboveEmpty = row == 0 || matr.GetByAbsoluteIndex(row - 1, col) == '\0';
+                bool isBelowEmpty = row == matr.Rows - 1 || matr.GetByAbsoluteIndex(row + 1, col) == '\0';
+                bool isLeftEmpty = col == 0 || matr.GetByAbsoluteIndex(row, col - 1) == '\0';
+                bool isRightEmpty = col == matr.Cols - 1 || matr.GetByAbsoluteIndex(row, col + 1) == '\0';
+
+                // Если это первый символ
+                if (isCrossower)
+                {
+                    // Проверяем, чтобы сверху или снизу было занято (пересечение), но слева и справа пусто
+                    return !(isAboveEmpty && isBelowEmpty) && isLeftEmpty; //&& isLeftEmpty && isRightEmpty;
+                }
+                else if (isCharAfterCrossower)
+                {
+                    return isAboveEmpty && isBelowEmpty && !isLeftEmpty && isRightEmpty;
+                }
+                else
+                {
+                    // Для остальных символов проверяем, что сверху и снизу пусто (нет грани),
+                    // но слева и справа свободно для продолжения
+                    return isAboveEmpty && isBelowEmpty && isLeftEmpty && isRightEmpty;
+                }
+            }
+            else
+            {
+                bool isLeftEmpty = col == 0 || matr.GetByAbsoluteIndex(row, col - 1) == '\0';
+                bool isRightEmpty = col == matr.Cols - 1 || matr.GetByAbsoluteIndex(row, col + 1) == '\0';
+                bool isAboveEmpty = row == 0 || matr.GetByAbsoluteIndex(row - 1, col) == '\0';
+                bool isBelowEmpty = row == matr.Rows - 1 || matr.GetByAbsoluteIndex(row + 1, col) == '\0';
+
+                // Если это первый символ
+                if (isCrossower)
+                {
+                    // Проверяем, чтобы слева или справа было занято (пересечение), но сверху и снизу пусто
+                    return !(isLeftEmpty && isRightEmpty) && isAboveEmpty; //&& isAboveEmpty && isBelowEmpty;
+                }
+                else if (isCharAfterCrossower)
+                {
+                    return !isAboveEmpty && isBelowEmpty && isLeftEmpty && isRightEmpty;
+                }
+                else
+                {
+                    // Для остальных символов проверяем, что слева и справа пусто (нет грани),
+                    // но сверху и снизу свободно для продолжения
+                    return isLeftEmpty && isRightEmpty; //&& isAboveEmpty && isBelowEmpty;
+                }
+            }
+        }
+
 
         public bool isFreeToPlaceHoriz(int absRow, int absColumn, ref int charIndx, string word)
         {
@@ -101,15 +157,35 @@ namespace CrissCross.Models
                 extendedToRight = true;
             }
 
+            int cnt = 0;
             for (int i = 0; i < word.Length && isFree; i++)
             {
                 int checkCol = startColumn + i;
                 char ch = matr.GetByAbsoluteIndex(absRow, checkCol);
-                if ((ch != '\0' && ch != word[i])|| 
-                    (ch == word[i] && !isPerpendicularCrossover(absRow, checkCol, true)))
+
+                // Проверка несовпадения
+                if (ch != '\0' && ch != word[i])
                 {
                     isFree = false;
+                    break;
                 }
+
+                // Проверка пересечения
+                bool isCrossing = ch == word[i];
+                bool validPlacement = isPerpendicularCrossover(absRow, checkCol, true, isCrossing, cnt == 1);
+
+                if (!validPlacement)
+                {
+                    isFree = false;
+                    break;
+                }
+
+                // Сброс счетчика, если символ совпал
+                if (isCrossing)
+                {
+                    cnt = 0;
+                }
+                cnt++;
             }
 
             // Если вставка невозможна, возвращаем матрицу в исходное состояние
@@ -161,15 +237,35 @@ namespace CrissCross.Models
                 extendedToBottom = true;
             }
 
+            int cnt = 0;
             for (int i = 0; i < word.Length && isFree; i++)
             {
                 int checkRow = startRow + i;
                 char ch = matr.GetByAbsoluteIndex(checkRow, absColumn);
-                if ((ch != '\0' && ch != word[i]) || 
-                    (ch == word[i] && !isPerpendicularCrossover(checkRow, absColumn, false)))
+
+                // Проверка несовпадения
+                if (ch != '\0' && ch != word[i])
                 {
                     isFree = false;
+                    break;
                 }
+
+                // Проверка пересечения
+                bool isCrossing = ch == word[i];
+                bool validPlacement = isPerpendicularCrossover(checkRow, absColumn, false, isCrossing, cnt == 1);
+
+                if (!validPlacement)
+                {
+                    isFree = false;
+                    break;
+                }
+
+                // Сброс счетчика, если символ совпал
+                if (isCrossing)
+                {
+                    cnt = 0;
+                }
+                cnt++;
             }
 
             if (!isFree && (extendedToBottom || extendedToTop))
@@ -263,7 +359,13 @@ namespace CrissCross.Models
             // Три цикла дла просмотра, куда можно засунуть слово.
             if (listOfPlacedWords.Count == 0)
             {
-                isFreeToPlaceHoriz(0, 0, ref index, word);
+                
+                //isFreeToPlaceHoriz(0, 0, ref index, word);
+                matr.Resize(0,0,0, word.Length);
+                for (int i = 0; i < word.Length; i++)
+                {
+                    matr.SetByAbsoluteIndex(0, i, word[i]);
+                }
                 absCoords = (0, 0);
                 isHoriz = true;
                 isPlacedSuccessfully = true;
