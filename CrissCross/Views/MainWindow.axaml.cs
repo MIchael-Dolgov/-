@@ -1,7 +1,12 @@
+using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia;
+using Avalonia.Rendering;
 using CrissCross.Models;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Enums;
+
 
 namespace CrissCross.Views
 {
@@ -59,7 +64,14 @@ namespace CrissCross.Views
             }
             else
             {
-                // Solution not found message
+                var messageBox = MessageBoxManager.GetMessageBoxStandard(
+                    "Error",
+                    "Решение не найдено!",
+                    ButtonEnum.Ok,
+                    MsBox.Avalonia.Enums.Icon.Error
+                );
+                //Thread.Sleep(1);
+                messageBox.ShowAsync();
             }
         }
 

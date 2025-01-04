@@ -20,7 +20,6 @@ namespace CrissCross.Models
                 this.place = place;
                 //this.wordCrossovers = wordCrossovers;
             }
-
         }
 
         public void RemovePlacedWordByName(string wordToRemove)
@@ -38,14 +37,47 @@ namespace CrissCross.Models
         public ResizableMatrix matr = new ResizableMatrix(1, 1);
         public double wordsDensityCoeff; // (wordCrossowers/matrixDimension)
 
-        public CrossBoard(string wordsFilepath, double wordsDensityCoeff = 0.001)
+        public CrossBoard(string wordsFilepath, double wordsDensityCoeff = 0.01)
         {
             LoadWords(wordsFilepath);
             this.wordsDensityCoeff = wordsDensityCoeff;
         }
 
-        public bool isFreeToPlaceHoriz(int absRow, int absColumn, int charIndx, string word)
+
+
+        private bool isPerpendicularCrossover(int row, int col, bool isHorizontal)
         {
+            if (isHorizontal)
+            {
+                // Проверяем, чтобы в перпендикулярных (вертикальных) направлениях
+                // пересечение было возможным, а параллельные (горизонтальные) клетки были пустыми
+                bool isAboveEmpty = row == 0 || matr.GetByAbsoluteIndex(row - 1, col) == '\0';
+                bool isBelowEmpty = row == matr.Rows - 1 || matr.GetByAbsoluteIndex(row + 1, col) == '\0';
+
+                bool isLeftEmpty = col == 0 || matr.GetByAbsoluteIndex(row, col - 1) == '\0';
+                bool isRightEmpty = col == matr.Cols - 1 || matr.GetByAbsoluteIndex(row, col + 1) == '\0';
+
+                // Пересечение допустимо, если сверху и снизу пусто, а слева и справа занято
+                return !(isAboveEmpty && isBelowEmpty) && (isLeftEmpty && isRightEmpty);
+            }
+            else
+            {
+                // Проверяем, чтобы в перпендикулярных (горизонтальных) направлениях
+                // пересечение было возможным, а параллельные (вертикальные) клетки были пустыми
+                bool isLeftEmpty = col == 0 || matr.GetByAbsoluteIndex(row, col - 1) == '\0';
+                bool isRightEmpty = col == matr.Cols - 1 || matr.GetByAbsoluteIndex(row, col + 1) == '\0';
+
+                bool isAboveEmpty = row == 0 || matr.GetByAbsoluteIndex(row - 1, col) == '\0';
+                bool isBelowEmpty = row == matr.Rows - 1 || matr.GetByAbsoluteIndex(row + 1, col) == '\0';
+
+                // Пересечение допустимо, если слева и справа пусто, а сверху и снизу занято
+                return !(isLeftEmpty && isRightEmpty) && (isAboveEmpty && isBelowEmpty);
+            }
+        }
+
+        public bool isFreeToPlaceHoriz(int absRow, int absColumn, ref int charIndx, string word)
+        {
+            int indCopy = charIndx;
             bool isFree = true;
             bool extendedToLeft = false;
             bool extendedToRight = false;
@@ -58,9 +90,12 @@ namespace CrissCross.Models
                 matr.Resize(0, 0, -startColumn, 0);
                 startColumn = 0;
                 extendedToLeft = true;
+                //charIndx = absColumn;
+                charIndx = 0;
             }
 
-            if (endColumn >= matr.Cols)
+            // Раньше здесь было matr.Cols, на заметку
+            if (endColumn >= oldCol)
             {
                 matr.Resize(0, 0, 0, endColumn - oldCol);
                 extendedToRight = true;
@@ -70,7 +105,8 @@ namespace CrissCross.Models
             {
                 int checkCol = startColumn + i;
                 char ch = matr.GetByAbsoluteIndex(absRow, checkCol);
-                if (ch != '\0' && ch != word[i])
+                if ((ch != '\0' && ch != word[i])|| 
+                    (ch == word[i] && !isPerpendicularCrossover(absRow, checkCol, true)))
                 {
                     isFree = false;
                 }
@@ -92,14 +128,16 @@ namespace CrissCross.Models
                 if (extendedToLeft || extendedToRight)
                 {
                     matr.Fit();
+                    charIndx = indCopy;
                 }
             }
 
             return isFree;
         }
 
-        public bool isFreeToPlaceVert(int absRow, int absColumn, int charIndx, string word)
+        public bool isFreeToPlaceVert(int absRow, int absColumn, ref int charIndx, string word)
         {
+            int indCopy = charIndx;
             bool isFree = true;
             bool extendedToBottom = false;
             bool extendedToTop = false;
@@ -112,9 +150,12 @@ namespace CrissCross.Models
                 matr.Resize(-startRow, 0, 0, 0);
                 startRow = 0;
                 extendedToTop = true;
+                //charIndx = absRow;
+                charIndx = 0;
             }
 
-            if (endRow >= matr.Rows)
+            // косяк в логике
+            if (endRow >= oldRow)
             {
                 matr.Resize(0, endRow - oldRow, 0, 0);
                 extendedToBottom = true;
@@ -124,7 +165,8 @@ namespace CrissCross.Models
             {
                 int checkRow = startRow + i;
                 char ch = matr.GetByAbsoluteIndex(checkRow, absColumn);
-                if (ch != '\0' && ch != word[i])
+                if ((ch != '\0' && ch != word[i]) || 
+                    (ch == word[i] && !isPerpendicularCrossover(checkRow, absColumn, false)))
                 {
                     isFree = false;
                 }
@@ -145,13 +187,14 @@ namespace CrissCross.Models
                 if (extendedToTop || extendedToBottom)
                 {
                     matr.Fit();
+                    charIndx = indCopy;
                 }
             }
 
             return isFree;
         }
 
-        public void InsertWord(string word, bool isHoriz, int charIndx, int absRow, int absColumn)
+        public void InsertWord(string word, bool isHoriz, int absRow, int absColumn)
         {
             // Вставка через абсолютные координаты
             if (isHoriz)
@@ -160,10 +203,14 @@ namespace CrissCross.Models
                 for (int i = 0; i < word.Length; i++)
                 {
                     int checkColumn = absColumn + i; //- charIndx; аналогично
-                    if (matr.GetByAbsoluteIndex(absRow, checkColumn) == '\0' || matr.GetByAbsoluteIndex(absRow, checkColumn) == word[i]) //Точно знаки одинаковые, вроде
+                    if (matr.GetByAbsoluteIndex(absRow, checkColumn) == word[i]) //Точно знаки одинаковые, вроде
                     {
                         RelCoordsVar = matr.AbsoluteToRelative(absRow, checkColumn);
                         wordCrossovers.Add((RelCoordsVar.Item1, RelCoordsVar.Item2));
+                    }
+                    else if (matr.GetByAbsoluteIndex(absRow, checkColumn) == '\0')
+                    {
+                        
                     }
                     else if (matr.GetByAbsoluteIndex(absRow, checkColumn) != word[i])
                     {
@@ -182,10 +229,14 @@ namespace CrissCross.Models
                 for (int j = 0; j < word.Length; j++)
                 {
                     int checkRow = absRow + j; //- charIndx;, нет смысла, т.к смещение уже посчитано
-                    if (matr.GetByAbsoluteIndex(checkRow, absColumn) == '\0') //Точно знаки одинаковые, вроде
+                    if (matr.GetByAbsoluteIndex(checkRow, absColumn) == word[j]) //Точно знаки одинаковые, вроде
                     {
                         RelCoordsVar = matr.AbsoluteToRelative(checkRow, absColumn);
                         wordCrossovers.Add((RelCoordsVar.Item1, RelCoordsVar.Item2));
+                    }
+                    else if (matr.GetByAbsoluteIndex(checkRow, absColumn) == '\0')
+                    {
+                        
                     }
                     else if (matr.GetByAbsoluteIndex(checkRow, absColumn) != word[j])
                     {
@@ -205,14 +256,13 @@ namespace CrissCross.Models
             bool isPlacedSuccessfully = false;
             bool isHoriz = false;
             (int, int) absCoords = (0,0);
+            int index = 0;
             // Три цикла дла просмотра, куда можно засунуть слово.
-            int indx = 0;
             if (listOfPlacedWords.Count == 0)
             {
-                isFreeToPlaceHoriz(0, 0, 0, word);
+                isFreeToPlaceHoriz(0, 0, ref index, word);
                 absCoords = (0, 0);
                 isHoriz = true;
-                indx = 0;
                 isPlacedSuccessfully = true;
             }
             else
@@ -225,20 +275,19 @@ namespace CrissCross.Models
                         {
                             if (matr.GetByAbsoluteIndex(i, j) == word[k])
                             {
-                                if (isFreeToPlaceHoriz(i, j, k, word))
+                                index = k;
+                                if (isFreeToPlaceHoriz(i, j, ref index, word))
                                 {
                                     //InsertWord(word, true, indx, i, j);
                                     isHoriz = true;
                                     isPlacedSuccessfully = true;
-                                    absCoords = (i, j);
-                                    indx = k;
+                                    absCoords = (i, j-index);
                                 }
-                                else if (isFreeToPlaceVert(i, j, k, word))
+                                else if (isFreeToPlaceVert(i, j, ref index, word))
                                 {
                                     //InsertWord(word, false, indx, i, j);
                                     isPlacedSuccessfully = true;
-                                    absCoords = (i, j);
-                                    indx = k;
+                                    absCoords = (i-index, j);
                                 }
                             }
                         }
@@ -248,9 +297,9 @@ namespace CrissCross.Models
 
             if (isPlacedSuccessfully)
             {
-                InsertWord(word, isHoriz, indx, absCoords.Item1, absCoords.Item2);
+                InsertWord(word, isHoriz,absCoords.Item1, absCoords.Item2);
                 //listOfPlacedWords модифицируется в методе InsertWord
-                listOfUnplacedWords.Remove(word);
+                //listOfUnplacedWords.Remove(word);
             }
             return isPlacedSuccessfully;
         }
@@ -258,107 +307,121 @@ namespace CrissCross.Models
         public bool RelativeWordDelete(string word)
         {
             bool isDeletedSucessfully = false;
-            foreach (PlacedWord wd in listOfPlacedWords)
+            if (listOfPlacedWords.Count == 1)
             {
-                if (wd.word == word)
+                RemovePlacedWordByName(word);
+                matr = new ResizableMatrix(1, 1);
+                isDeletedSucessfully = true;
+            }
+            else
+            {
+                foreach (PlacedWord wd in listOfPlacedWords)
                 {
-                    if (wd.isHorizDirection)
+                    if (wd.word == word)
                     {
-                        //(int, int) RelCoords = (wd.place.X, wd.place.Y);
-                        (int, int) absCoords = matr.RelativeToAbsolute(wd.place.Item1, wd.place.Item2);
-                        for (int i = 0; i < wd.word.Length; i++)
+                        if (wd.isHorizDirection)
                         {
-                            int checkColumn = absCoords.Item2 + i;
-                            if (wordCrossovers.Contains((absCoords.Item1, checkColumn)))
+                            //(int, int) RelCoords = (wd.place.X, wd.place.Y);
+                            (int, int) absCoords = matr.RelativeToAbsolute(wd.place.Item1, wd.place.Item2);
+                            for (int i = 0; i < wd.word.Length; i++)
                             {
-                                wordCrossovers.Remove((absCoords.Item1, checkColumn));
-                            }
-                            else
-                            {
-                                matr.SetByAbsoluteIndex(absCoords.Item1, checkColumn, '\0');
+                                int checkColumn = absCoords.Item2 + i;
+                                if (wordCrossovers.Contains((wd.place.Item1, wd.place.Item2 + i)))
+                                {
+                                    wordCrossovers.Remove((wd.place.Item1, wd.place.Item2 + i));
+                                }
+                                else
+                                {
+                                    matr.SetByAbsoluteIndex(absCoords.Item1, checkColumn, '\0');
+                                }
                             }
                         }
-                    }
-                    else
-                    {
-                        (int, int) absCoords = matr.RelativeToAbsolute(wd.place.Item1, wd.place.Item2);
-                        for (int i = 0; i < wd.word.Length; i++)
+                        else
                         {
-                            int checkRow = absCoords.Item1 + i;
-                            if (wordCrossovers.Contains((checkRow, absCoords.Item2)))
+                            (int, int) absCoords = matr.RelativeToAbsolute(wd.place.Item1, wd.place.Item2);
+                            for (int i = 0; i < wd.word.Length; i++)
                             {
-                                wordCrossovers.Remove((checkRow, absCoords.Item2));
-                            }
-                            else
-                            {
-                                matr.SetByAbsoluteIndex(checkRow, absCoords.Item2, '\0');
+                                int checkRow = absCoords.Item1 + i;
+                                if (wordCrossovers.Contains((wd.place.Item1 + i, wd.place.Item2)))
+                                {
+                                    wordCrossovers.Remove((wd.place.Item1 + i, wd.place.Item2));
+                                }
+                                else
+                                {
+                                    matr.SetByAbsoluteIndex(checkRow, absCoords.Item2, '\0');
+                                }
                             }
                         }
-                    }
 
-                    isDeletedSucessfully = true;
+                        isDeletedSucessfully = true;
+                    }
                 }
             }
-
             if (isDeletedSucessfully)
             {
                 //
                 matr.Fit();
-                RemovePlacedWordByName(word);
+                //RemovePlacedWordByName(word);
                 //
-                listOfUnplacedWords.Add(word);
+                //listOfUnplacedWords.Add(word);
             }
 
             return isDeletedSucessfully;
-
         }
 
         public bool SolveCrissCross()
         {
-            foreach (List<string> permutation in PermutationGenerator.GeneratePermutations(listOfUnplacedWords))
-            {
-                listOfUnplacedWords = permutation;
-                if (BackTrackingSolutionAlg(0))
-                {
-                    return true;
-                }
-            }
+            // Сортируем слова по длине в порядке убывания
+            listOfUnplacedWords.Sort((a, b) => b.Length.CompareTo(a.Length));
 
-            return false;
+            // Запускаем бэктрекинг
+            List<string> usedWords = new List<string>();
+            return BackTrackingSolutionAlg(usedWords, listOfUnplacedWords.Count);
         }
-        
-        public bool BackTrackingSolutionAlg(int currentIndex)
+
+        public bool BackTrackingSolutionAlg(List<string> usedWords, int vol)
         {
             // Условие успешного завершения
-            if (currentIndex >= listOfUnplacedWords.Count && 
-                (double)wordCrossovers.Count / (matr.Rows * matr.Cols) >= wordsDensityCoeff)
+            if (usedWords.Count == vol && 
+                ((double)wordCrossovers.Count / (matr.Rows * matr.Cols) >= wordsDensityCoeff))
             {
                 return true;
             }
 
-            // Если индекс вышел за пределы списка слов
-            if (currentIndex >= listOfUnplacedWords.Count)
-            {
-                return false;
-            }
+            // Создаём копию списка, чтобы безопасно итерировать
+            var wordsToTry = new List<string>(listOfUnplacedWords);
 
-            string currentWord = listOfUnplacedWords[currentIndex];
-
-            // Пытаемся вставить текущее слово
-            if (RelativeWordInsert(currentWord))
+            foreach (var word in wordsToTry)
             {
-                // Рекурсивно продолжаем с индексом следующего слова
-                if (BackTrackingSolutionAlg(currentIndex + 1))
+                if (usedWords.Contains(word)) continue; // Пропускаем уже использованные слова
+
+                // Пытаемся вставить текущее слово
+                if (RelativeWordInsert(word))
                 {
-                    return true;
-                }
+                    Console.WriteLine($"Successfully placed: {word}");
+                    usedWords.Add(word); // Отмечаем слово как использованное
+                    listOfUnplacedWords.Remove(word);
 
-                // Если размещение не сработало, откатываем изменения
-                RelativeWordDelete(currentWord);
+                    // Рекурсивно продолжаем с обновлённым списком использованных слов
+                    if (BackTrackingSolutionAlg(usedWords, vol))
+                    {
+                        return true;
+                    }
+
+                    // Если размещение не сработало, откатываем изменения
+                    Console.WriteLine($"Backtracking, removing: {word}");
+                    RelativeWordDelete(word);
+                    RemovePlacedWordByName(word);
+                    usedWords.Remove(word);
+                }
+                else
+                {
+                    Console.WriteLine($"Failed to place: {word}");
+                }
             }
 
-            // Пробуем следующий вариант
-            return BackTrackingSolutionAlg(currentIndex + 1);
+            // Если ни одно слово не может быть вставлено, возвращаем false
+            return false;
         }
         
         private static void ConvertWordsToLowercase(string filePath)

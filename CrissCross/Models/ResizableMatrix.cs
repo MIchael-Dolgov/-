@@ -4,6 +4,11 @@ namespace CrissCross.Models
 {
     public class ResizableMatrix
     {
+        public bool IsWithinBounds(int row, int col)
+        {
+            return row >= 0 && row < Rows && col >= 0 && col < Cols;
+        }
+        
         public char[,] _matrix;
         //private int _baseRow; // Референсная строка
         //private int _baseCol; // Референсный столбец
