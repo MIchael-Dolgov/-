@@ -131,52 +131,6 @@ namespace CrissCross.Models
             }
         }
         
-        /*
-        public void Resize(int rowsToAddTop, int rowsToAddBottom, int colsToAddLeft, int colsToAddRight)
-        {
-            int newRows = Rows + rowsToAddTop + rowsToAddBottom;
-            int newCols = Cols + colsToAddLeft + colsToAddRight;
-
-            if (newRows <= 0 || newCols <= 0)
-                throw new ArgumentException("Matrix dimensions must be positive.");
-
-            // Ограничение на уменьшение больше текущего размера
-            if (rowsToAddTop < -Rows || rowsToAddBottom < -Rows || colsToAddLeft < -Cols || colsToAddRight < -Cols)
-                throw new ArgumentException("Resize values cannot exceed current dimensions.");
-
-            var newMatrix = new char[newRows, newCols];
-
-            // Определение границ копирования
-            int startRow = Math.Max(0, rowsToAddTop);
-            int startCol = Math.Max(0, colsToAddLeft);
-
-            for (int i = 0; i < Rows; i++)
-            {
-                for (int j = 0; j < Cols; j++)
-                {
-                    // Убедиться, что старый индекс находится в пределах новой матрицы
-                    if (i + startRow < newRows && j + startCol < newCols)
-                    {
-                        newMatrix[i + startRow, j + startCol] = _matrix[i, j];
-                    }
-                }
-            }
-
-            // Обновление матрицы
-            _matrix = newMatrix;
-
-            // Обновление базовых координат
-            if (_baseInitialized)
-            {
-                _baseRow += rowsToAddTop;
-                _baseCol += colsToAddLeft;
-
-                _baseRow = Math.Max(0, _baseRow);
-                _baseCol = Math.Max(0, _baseCol);
-            }
-        }
-        */
-
         // Уменьшение матрицы до содержимого
         public void Fit()
         {

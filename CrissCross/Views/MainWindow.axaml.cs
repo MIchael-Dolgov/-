@@ -21,10 +21,11 @@ namespace CrissCross.Views
             //char[,] matrix = new char[,] { { 'b', 'i', ' ', 'a' }, { 'b', ' ', 'b', 'a' }, { 'a', ' ', ' ', ' ' } };
             //var viewModel = new MainWindowViewModel(matrix);
             //DataContext = viewModel;
-            CrossBoard board =
-                new CrossBoard(
-                    "/Users/michael/Documents/University (original)/2 course/casd/casd-labs/CrissCross/CrissCross/Models/Words.txt");
-            if (board.SolveCrissCross())
+            NewCrossBoard board =
+                new NewCrossBoard(
+                    "/Users/michael/Documents/University (original)/2 course/casd/casd-labs/CrissCross/CrissCross/Models/Words.txt",
+                    0.15); //На картинке коэффициент: 0.15. Получается абсолютно аналогичное решение
+            if (board.Solve())
             {
                 char[,] matrix = board.matr._matrix;
 
