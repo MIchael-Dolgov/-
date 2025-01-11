@@ -14,7 +14,7 @@ namespace CrissCross.Models
 
         public ResizableMatrix matr { get; set; } = new ResizableMatrix(1, 1);
         private List<(int, int)> wordCrossowersRelativeCoords = new List<(int, int)>();
-        private List<(string, int, int, bool)> badPlacingPositionAbsoluteCoords = new List<(string, int, int, bool)>();
+        //private List<(string, int, int, bool)> badPlacingPositionAbsoluteCoords = new List<(string, int, int, bool)>();
         public double wordsDensityCoeff; // (wordCrossowers/matrixDimension)
 
         public NewCrossBoard(string wordsFilepath, double wordsDensityCoeff = 0.1)
@@ -53,8 +53,9 @@ namespace CrissCross.Models
                             if (matr.GetByAbsoluteIndex(i, j) == word[k])
                             {
                                 if (IsFreeToPlaceHoriz(i, j, word, k, out AbsoluteCoords.Item1,
-                                        out AbsoluteCoords.Item2) &&
-                                    !badPlacingPositionAbsoluteCoords.Contains((word, i, j, true)))
+                                        out AbsoluteCoords.Item2)) //&&
+                                    //!badPlacingPositionAbsoluteCoords.Contains((word, i, j, true)))
+                                    //избыточно
                                 {
                                     isWordPlaced = true;
                                     //AbsoluteCoords = (i, j-k);
@@ -63,8 +64,9 @@ namespace CrissCross.Models
                                     isHoriz = true;
                                 }
                                 else if (IsFreeToPlaceVert(i, j, word, k, out AbsoluteCoords.Item1,
-                                             out AbsoluteCoords.Item2) &&
-                                         !badPlacingPositionAbsoluteCoords.Contains((word, i, j, false)))
+                                             out AbsoluteCoords.Item2)) //&&
+                                         //!badPlacingPositionAbsoluteCoords.Contains((word, i, j, false)))
+                                         //избыточно
                                 {
                                     isWordPlaced = true;
                                     //AbsoluteCoords = (i-k, j);
@@ -385,7 +387,7 @@ namespace CrissCross.Models
                 {
                     Console.WriteLine($"Successfully placed: {wd}");
                     listOfPlacedWords.Add((wd, RelX, RelY, IsHoriz));
-                    badPlacingPositionAbsoluteCoords.Add((wd, RelX, RelY, IsHoriz));
+                    //badPlacingPositionAbsoluteCoords.Add((wd, RelX, RelY, IsHoriz));
                     listOfUnplacedWords.Remove(wd);
                     if (BacktrackingAlg())
                     {
@@ -393,7 +395,7 @@ namespace CrissCross.Models
                     }
 
                     Console.WriteLine($"Backtracking removing: {wd}");
-                    badPlacingPositionAbsoluteCoords.Remove((wd, RelX, RelY, IsHoriz));
+                    //badPlacingPositionAbsoluteCoords.Remove((wd, RelX, RelY, IsHoriz));
                     DeleteWord(wd);
                     listOfPlacedWords.Remove((wd, RelX, RelY, IsHoriz));
                     listOfUnplacedWords.Add(wd);
@@ -419,7 +421,10 @@ namespace CrissCross.Models
                 }
 
                 listOfUnplacedWords.AddRange(words);
-                listOfUnplacedWords.Sort((a, b) => b.Length.CompareTo(a.Length));
+                //listOfUnplacedWords.Sort((a, b) => b.Length.CompareTo(a.Length)); // вставка слов по уменьшению длины слова
+                //время выполнения на тестовом наборе: 15-25 секунд
+                listOfUnplacedWords.Sort((a, b) => a.Length.CompareTo(b.Length)); //вставка слов по увеличению длины слова
+                //время выполнения на тестовом наборе: 1-3 секунды
                 for (int i = 0; i < words.Length; i++)
                 {
                     words[i] = words[i].ToLower();
