@@ -62,7 +62,6 @@ namespace Task29NoGUI
         {
             using (StreamReader reader = new StreamReader(pathToFileWithGraph))
             {
-                // Читаем количество вершин
                 int n = int.Parse(reader.ReadLine()!);
                 Initialize(n);
 
@@ -83,10 +82,8 @@ namespace Task29NoGUI
                 }
             }
 
-            // Выполняем поиск всех клик
             var cliques = FindAllCliques();
 
-            // Выводим найденные клики
             Console.WriteLine("Found cliques:");
             foreach (var clique in cliques)
             {
